@@ -75,7 +75,6 @@ def itosbin(i, n):
 
 def alg_inst(asm, reg_list):
     #addi, add, sub, mul, mult, mfhi, mflo, slt, lui
-    #print("Entering alg function")
     full = asm.split(' ')   #addi $1, $2, 10
     inst = full[0]          #addi
     if inst != 'mflo' and inst != 'mfhi':
@@ -85,9 +84,7 @@ def alg_inst(asm, reg_list):
 
     if inst == 'addi':
         const = int(full[3])
-        #print(f'Before {reg_list[first]}, {reg_list[second]}, {const}')
         reg_list[first] = reg_list[second] + const
-        #print(f'After {reg_list[first]}, {reg_list[second]}, {const}')
         return reg_list[first]
     elif inst == 'add':
         third = int(full[3][1:])
@@ -108,19 +105,14 @@ def alg_inst(asm, reg_list):
         second = int(full[2][1:])
         temp = reg_list[first] * reg_list[second]
         val = itosbin(temp, 64)
-        #val = itosbin(reg_list[first] * reg_list[second], 64)
         reg_list[33] = bin_to_dec(val[:32])  #lo
         if val[32:].__contains__('1'):
             reg_list[34] = bin_to_dec(val[32:])   #hi
     elif inst == 'mul':
         third = int(full[3][1:])
-        #print(f'2nd: {reg_list[second]}, 3rd: {reg_list[third]}')
         temp = reg_list[second] * reg_list[third]
-        #print(f'Temp: {temp}')
 
         val = itosbin(temp, 64)
-        #print(f'{val}\n{bin_to_dec(val[:32])}, {bin_to_dec(val[32:])}')
-        #val = dec_to_bin(reg_list[first] * reg_list[second], 64)
         reg_list[33] = bin_to_dec(val[:32])  #lo
         reg_list[first] = bin_to_dec(val[32:])
         if val[32:].__contains__('1'):
@@ -195,7 +187,6 @@ def store_inst(asm, reg_list, dm_list):
     shift = int(after[:first_i])
     second = int(after[(second_i + 1):-1])
     index = ((shift + reg_list[second]) - 8192) // 4
-    #print(shift, reg_list[second], index)
 
     if inst == 'sw':
         dm_list[index] = reg_list[first]
@@ -205,9 +196,6 @@ def store_inst(asm, reg_list, dm_list):
 
 def branch_inst(asm, reg_list, pc, index):
     #j, bne, beq
-    #beq $7, $0, 1
-    #bne $25, $13, 2
-    #j 9
     full = asm.split(' ')   #bne $25, $13, 2
     inst = full[0]          #j, bne, beq
 
@@ -215,37 +203,27 @@ def branch_inst(asm, reg_list, pc, index):
         first = int(full[1][1:-1])      #25
         second = int(full[2][1:-1])     #13
         const = int(full[3])            #2
-        #print(first, second, const)
     else:
         const = int(full[1])
 
     if inst == 'j':
-        #print(f'Before j: {index * 4}')
         index = int(const / 4)
-        #print(f'After j: {index * 4}')
         return index
     elif inst == 'beq':
-        #print(f'Before beq: {index}')
         if reg_list[first] == reg_list[second]:     #$25 != $13
             index += int(const)
             index += 1
-            #print(f'After beq: {index}')
             return index
         else:
             index += 1
-            #print(f'After beq: {index}')
             return index
     elif inst == 'bne':
-        #print(f'Before bne: {index}')
         if reg_list[first] != reg_list[second]:
-            #print(f'CONST: {index}')
             index += int(const)
             index += 1
-            #print(f'After bne: {index}')
             return index
         else:
             index += 1
-            #print(f'After bne: {index}')
             return index
 
 def special_inst(asm, reg_list): #width
@@ -373,7 +351,7 @@ def process(b):
             sa = str(sa)
             asm = "srl " + rd + ", " + rt + ", " + sa
             print(f'in asm: {asm}')
-        elif b_func == "000000":  #sll ****************************************************************
+        elif b_func == "000000":  #sll
             rs = int(b_rs, base=2)
             rt = int(b_rt, base=2)
             rd = int(b_rd, base=2)
@@ -538,7 +516,6 @@ def exec(asmline, reg, dm, pc, index):
     mem = ["sw", "lw"]
     branch = ["j", "beq", "bne"]
     special = ["w"]
-    #output_file = open("reg_output.txt", "w")
 
     if (alg.__contains__(asmline[:4])) or (alg.__contains__(asmline[:3])):
         alg_inst(asmline, reg)
